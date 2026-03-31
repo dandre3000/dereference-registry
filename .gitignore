@@ -1,0 +1,8 @@
+/node_modules/
+/build/
+ignore/
+server.ts
+index.html
+package-lock.json
+deno.lock
+dandre3000-dereference-registry*.tgz

@@ -1,0 +1,40 @@
+{
+  "name": "@dandre3000/dereference-registry",
+  "version": "0.1.0",
+  "license": "MIT",
+  "author": {
+    "name": "DeAundre Payne",
+    "email": "apps.fondling796@passinbox.com",
+    "url": "https://github.com/dandre3000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dandre3000/async-message.git"
+  },
+  "description": "Like FinalizationRegistry but the cleanup function is guranteed to be called for each dereferenced target.",
+  "keywords": [
+    "memory",
+    "FinalizationRegistry"
+  ],
+  "files": [
+    "./build"
+  ],
+  "exports": {
+    "types": "./build/index.d.ts",
+    "import": "./build/index.js"
+  },
+  "scripts": {
+    "build": "tsc && bun build --entrypoints ./index.ts --outdir ./build --minify-whitespace --minify-syntax",
+    "test": "node --test tests/node.test.js && bun test tests/bun.test.js && deno test -A --no-check tests/deno.test.js",
+    "prepack": "bun run build && bun run test"
+  },
+  "engines": {
+    "bun": ">=2.2.1",
+    "deno": ">=1.3.1",
+    "node": ">=23.5.0"
+  },
+  "type": "module",
+  "devDependencies": {
+    "typescript": "^6.0.2"
+  }
+}

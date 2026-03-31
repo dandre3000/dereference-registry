@@ -1,0 +1,12 @@
+{
+    "files": ["./index.ts"],
+    "compilerOptions": {
+        "target": "es2021",
+        "module": "es2022",
+        "moduleResolution": "bundler",
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "declarationDir": "./build",
+        "skipLibCheck": true
+    }
+}
