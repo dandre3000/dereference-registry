@@ -189,6 +189,7 @@ export class DereferenceRegistry {
             throw new TypeError(`this (${Object.prototype.toString.call(this)}) is not a DereferenceRegistry instance`)
 
         clearInterval(this.#data.intervalId)
+        this.#data.started = false
         this.#data.intervalId = NaN
         this.#data.cleanup = undefined as any
         this.#data.cellSet.clear()
