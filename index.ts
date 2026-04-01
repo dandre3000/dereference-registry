@@ -5,8 +5,6 @@ interface Cell {
     unregisterTokenCellSet?: Set<Cell>
 }
 
-type Cleanup = (heldValue: any) => void
-
 interface DereferenceRegistryData {
     symbol: symbol
     DereferenceRegistryRef: WeakRef<DereferenceRegistry>
@@ -14,7 +12,7 @@ interface DereferenceRegistryData {
     interval: number
     cellSet: Set<Cell>
     unregisterTokenToCellSetMap: WeakMap<WeakKey, Set<Cell>>
-    cleanup: Cleanup
+    cleanup: (heldValue: any) => void
 }
 
 const DereferenceRegistrySymbol = Symbol()
@@ -45,9 +43,9 @@ export class DereferenceRegistry {
     }
 
     get cleanup () { return this.#data.cleanup }
-    set cleanup (fn: Cleanup) { this.#data.cleanup = fn }
+    set cleanup (fn: (heldValue: any) => void) { this.#data.cleanup = fn }
 
-    constructor (cleanup: Cleanup, interval = 60000) {
+    constructor (cleanup: (heldValue: any) => void, interval = 60000) {
         if (typeof cleanup !== 'function') throw new TypeError(`cleanup (${typeof cleanup}) argument is not a function.`)
 
         if (typeof interval !== 'number') throw new TypeError(`interval (${typeof interval}) argument is not a number.`)
@@ -125,13 +123,14 @@ export class DereferenceRegistry {
         return true
     }
 
-    disconnect () {
+    clear () {
         if (this.#data?.symbol !== DereferenceRegistrySymbol)
             throw new TypeError(`this (${Object.prototype.toString.call(this)}) is not a DereferenceRegistry instance`)
 
         clearInterval(this.#data.intervalId)
-        this.#data.cellSet.clear()
+        this.#data.intervalId = NaN
         this.#data.cleanup = undefined as any
+        this.#data.cellSet.clear()
     }
 }
 

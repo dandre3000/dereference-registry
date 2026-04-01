@@ -12,7 +12,7 @@ export const runTests = async (test, expect) => {
     test('DereferenceRegistry instance methods this must be a DereferenceRegistry instance', () => {
         expect(() => DereferenceRegistry.prototype.register.call({}, {})).toThrowError(TypeError)
         expect(() => DereferenceRegistry.prototype.unregister.call({}, {})).toThrowError(TypeError)
-        expect(() => DereferenceRegistry.prototype.disconnect.call()).toThrowError(TypeError)
+        expect(() => DereferenceRegistry.prototype.clear.call()).toThrowError(TypeError)
     })
 
     test('DereferenceRegistry.prototype.register target is required and must be a function, object or symbol', () => {
@@ -38,7 +38,7 @@ export const runTests = async (test, expect) => {
         registry.register({}, undefined, unregisterToken)
         expect(registry.unregister(unregisterToken)).toBeTruthy()
 
-        registry.disconnect()
+        registry.clear()
     })
 
     test('cleanup will be called for all registered entries if the corresponding target has been dereferenced', async () => {
@@ -55,7 +55,7 @@ export const runTests = async (test, expect) => {
 
                 if (typeof gcValue === 'symbol') return
 
-                registry.disconnect()
+                registry.clear()
                 clearInterval(targetIntervalId)
 
                 if (gcValue === heldValue)
