@@ -20,11 +20,19 @@ npm i @dandre3000/dereference-registry
 
 #### cleanup: (heldValue: any) => void
 
+#### started: boolean
+
 ### Instance methods
 
 #### register (target: WeakKey, heldValue?: any, unregisterToken?: WeakKey): void
 
 #### unregister (unregisterToken: WeakKey): boolean
+
+#### runCleanup (): void
+
+#### start (): void
+
+#### stop(): void
 
 #### clear (): void
 
