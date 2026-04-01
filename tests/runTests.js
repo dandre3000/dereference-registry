@@ -5,13 +5,12 @@ export const runTests = async (test, expect) => {
         expect(() => new DereferenceRegistry({})).toThrowError(TypeError)
     })
 
-    test('new DereferenceRegistry interval must be a number', () => {
-        expect(() => new DereferenceRegistry(() => {}, '1000')).toThrowError(TypeError)
-    })
-
     test('DereferenceRegistry instance methods this must be a DereferenceRegistry instance', () => {
         expect(() => DereferenceRegistry.prototype.register.call({}, {})).toThrowError(TypeError)
         expect(() => DereferenceRegistry.prototype.unregister.call({}, {})).toThrowError(TypeError)
+        expect(() => DereferenceRegistry.prototype.runCleanup.call()).toThrowError(TypeError)
+        expect(() => DereferenceRegistry.prototype.start.call()).toThrowError(TypeError)
+        expect(() => DereferenceRegistry.prototype.stop.call()).toThrowError(TypeError)
         expect(() => DereferenceRegistry.prototype.clear.call()).toThrowError(TypeError)
     })
 
@@ -38,7 +37,7 @@ export const runTests = async (test, expect) => {
         registry.register({}, undefined, unregisterToken)
         expect(registry.unregister(unregisterToken)).toBeTruthy()
 
-        registry.clear()
+        // registry.clear()
     })
 
     test('cleanup will be called for all registered entries if the corresponding target has been dereferenced', async () => {
@@ -47,6 +46,8 @@ export const runTests = async (test, expect) => {
         expect(await new Promise((resolve, reject) => {
             let gcValue = Symbol()
             const registry = new DereferenceRegistry(value => gcValue = value, 1000)
+
+            registry.start()
 
             const targetIntervalId = setInterval(() => {
                 for (let i = 0; i < 100; i++) {

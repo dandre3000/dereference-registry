@@ -30,4 +30,4 @@ npm i @dandre3000/dereference-registry
 
 ## License
 
-[MIT](https://github.com/dandre3000/async-message/blob/main/LICENSE)
+[MIT](https://github.com/dandre3000/dereference-registry/blob/main/LICENSE)

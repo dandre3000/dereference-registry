@@ -8,6 +8,7 @@ interface Cell {
 interface DereferenceRegistryData {
     symbol: symbol
     DereferenceRegistryRef: WeakRef<DereferenceRegistry>
+    started: boolean
     intervalId: number | ReturnType<typeof setInterval>
     interval: number
     cellSet: Set<Cell>
@@ -36,29 +37,63 @@ const DereferenceRegistryCleanup = (data: DereferenceRegistryData) => {
 export class DereferenceRegistry {
     #data: DereferenceRegistryData
 
-    get interval () { return this.#data.interval }
-    set interval (ms) {
-        clearInterval(this.#data.intervalId)
-        this.#data.intervalId = setInterval(DereferenceRegistryCleanup, this.#data.interval = ms, this.#data)
-    }
-
-    get cleanup () { return this.#data.cleanup }
-    set cleanup (fn: (heldValue: any) => void) { this.#data.cleanup = fn }
-
     constructor (cleanup: (heldValue: any) => void, interval = 60000) {
         if (typeof cleanup !== 'function') throw new TypeError(`cleanup (${typeof cleanup}) argument is not a function.`)
 
-        if (typeof interval !== 'number') throw new TypeError(`interval (${typeof interval}) argument is not a number.`)
+        interval = Math.trunc(Number(interval))
+        if (interval < 10 || !interval) interval = 10
+        if (interval > 2147483647) interval = 2147483647
 
         this.#data = {
             symbol: DereferenceRegistrySymbol,
             DereferenceRegistryRef: new WeakRef(this),
+            started: false,
             intervalId: NaN,
             interval,
             cellSet: new Set,
             unregisterTokenToCellSetMap: new WeakMap,
             cleanup
         }
+    }
+
+    get interval () {
+        if (this.#data?.symbol !== DereferenceRegistrySymbol)
+            throw new TypeError(`this (${Object.prototype.toString.call(this)}) is not a DereferenceRegistry instance`)
+
+        return this.#data.interval
+    }
+    set interval (ms) {
+        if (this.#data?.symbol !== DereferenceRegistrySymbol)
+            throw new TypeError(`this (${Object.prototype.toString.call(this)}) is not a DereferenceRegistry instance`)
+
+        ms = Math.trunc(Number(ms))
+        if (ms < 10 || !ms) ms = 10
+        if (ms > 2147483647) ms = 2147483647
+
+        clearInterval(this.#data.intervalId)
+        this.#data.intervalId = setInterval(DereferenceRegistryCleanup, this.#data.interval = ms, this.#data)
+    }
+
+    get cleanup () {
+        if (this.#data?.symbol !== DereferenceRegistrySymbol)
+            throw new TypeError(`this (${Object.prototype.toString.call(this)}) is not a DereferenceRegistry instance`)
+
+        return this.#data.cleanup
+    }
+    set cleanup (fn: (heldValue: any) => void) {
+        if (this.#data?.symbol !== DereferenceRegistrySymbol)
+            throw new TypeError(`this (${Object.prototype.toString.call(this)}) is not a DereferenceRegistry instance`)
+
+        if (typeof fn !== 'function') throw new TypeError(`cleanup (${typeof fn}) is not a function.`)
+
+        this.#data.cleanup = fn
+    }
+
+    get started () {
+        if (this.#data?.symbol !== DereferenceRegistrySymbol)
+            throw new TypeError(`this (${Object.prototype.toString.call(this)}) is not a DereferenceRegistry instance`)
+
+        return this.#data.started
     }
 
     register (target: WeakKey, heldValue?: any, unregisterToken?: WeakKey) {
@@ -81,8 +116,6 @@ export class DereferenceRegistry {
         }
 
         this.#data.cellSet.add(cell)
-
-        if (!this.#data.intervalId) this.#data.intervalId = setInterval(DereferenceRegistryCleanup, this.#data.interval, this.#data)
 
         if (unregisterToken === undefined) return
 
@@ -121,6 +154,34 @@ export class DereferenceRegistry {
         cellSet.clear()
 
         return true
+    }
+
+    runCleanup () {
+        if (this.#data?.symbol !== DereferenceRegistrySymbol)
+            throw new TypeError(`this (${Object.prototype.toString.call(this)}) is not a DereferenceRegistry instance`)
+
+        DereferenceRegistryCleanup(this.#data)
+    }
+
+    start () {
+        if (this.#data?.symbol !== DereferenceRegistrySymbol)
+            throw new TypeError(`this (${Object.prototype.toString.call(this)}) is not a DereferenceRegistry instance`)
+
+        if (this.#data.intervalId) return
+
+        this.#data.started = true
+        this.#data.intervalId = setInterval(DereferenceRegistryCleanup, this.#data.interval, this.#data)
+    }
+
+    stop () {
+        if (this.#data?.symbol !== DereferenceRegistrySymbol)
+            throw new TypeError(`this (${Object.prototype.toString.call(this)}) is not a DereferenceRegistry instance`)
+
+        if (!this.#data.intervalId) return
+
+        clearInterval(this.#data.interval)
+        this.#data.started = false
+        this.#data.intervalId = NaN
     }
 
     clear () {

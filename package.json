@@ -1,6 +1,6 @@
 {
   "name": "@dandre3000/dereference-registry",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "author": {
     "name": "DeAundre Payne",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dandre3000/async-message.git"
+    "url": "git+https://github.com/dandre3000/dereference-registry.git"
   },
   "description": "Like FinalizationRegistry but the cleanup function is guranteed to be called for each dereferenced target.",
   "keywords": [
