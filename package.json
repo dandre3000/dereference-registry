@@ -14,6 +14,7 @@
   "description": "Like FinalizationRegistry but the cleanup function is guranteed to be called for each dereferenced target.",
   "keywords": [
     "memory",
+    "garbage-collection",
     "FinalizationRegistry"
   ],
   "files": [
@@ -35,6 +36,8 @@
   },
   "type": "module",
   "devDependencies": {
+    "@types/node": "^25.5.0",
+    "expect": "^29.7.0",
     "typescript": "^6.0.2"
   }
 }

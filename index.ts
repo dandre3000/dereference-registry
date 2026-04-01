@@ -8,14 +8,16 @@ interface Cell {
 type Cleanup = (heldValue: any) => void
 
 interface DereferenceRegistryData {
+    symbol: symbol
     DereferenceRegistryRef: WeakRef<DereferenceRegistry>
-    intervalId: number
+    intervalId: number | ReturnType<typeof setInterval>
     interval: number
     cellSet: Set<Cell>
     unregisterTokenToCellSetMap: WeakMap<WeakKey, Set<Cell>>
     cleanup: Cleanup
 }
 
+const DereferenceRegistrySymbol = Symbol()
 const targetToWeakRefMap: WeakMap<WeakKey, WeakRef<WeakKey>> = new WeakMap
 const unregisterTokenToWeakRefMap: WeakMap<WeakKey, WeakRef<WeakKey>> = new WeakMap
 
@@ -51,6 +53,7 @@ export class DereferenceRegistry {
         if (typeof interval !== 'number') throw new TypeError(`interval (${typeof interval}) argument is not a number.`)
 
         this.#data = {
+            symbol: DereferenceRegistrySymbol,
             DereferenceRegistryRef: new WeakRef(this),
             intervalId: NaN,
             interval,
@@ -61,9 +64,14 @@ export class DereferenceRegistry {
     }
 
     register (target: WeakKey, heldValue?: any, unregisterToken?: WeakKey) {
+        if (this.#data?.symbol !== DereferenceRegistrySymbol)
+            throw new TypeError(`this (${Object.prototype.toString.call(this)}) is not a DereferenceRegistry instance`)
+
         const typeofTarget = typeof target
-        if (typeofTarget !== 'function' && typeofTarget !== 'object' && typeofTarget !== 'symbol')
-            throw new TypeError(`target (${typeofTarget}) is not a function, object or symbol.`)
+        if (
+            (typeofTarget !== 'function' && typeofTarget !== 'object' && typeofTarget !== 'symbol') ||
+            target === null
+        ) throw new TypeError(`target (${typeofTarget}) is not a function, object or symbol.`)
 
         let targetRef = targetToWeakRefMap.get(target)
         if (!targetRef) targetRef = new WeakRef(target)
@@ -95,9 +103,14 @@ export class DereferenceRegistry {
     }
 
     unregister (unregisterToken: WeakKey) {
+        if (this.#data?.symbol !== DereferenceRegistrySymbol)
+            throw new TypeError(`this (${Object.prototype.toString.call(this)}) is not a DereferenceRegistry instance`)
+
         const typeofUnregisterToken = typeof unregisterToken
-        if (typeofUnregisterToken !== 'function' && typeofUnregisterToken !== 'object' && typeofUnregisterToken !== 'symbol')
-            throw new TypeError(`target (${typeofUnregisterToken}) is not a function, object or symbol.`)
+        if (
+            (typeofUnregisterToken !== 'function' && typeofUnregisterToken !== 'object' && typeofUnregisterToken !== 'symbol') ||
+            unregisterToken === null
+        ) throw new TypeError(`target (${typeofUnregisterToken}) is not a function, object or symbol.`)
 
         const cellSet = this.#data.unregisterTokenToCellSetMap.get(unregisterToken)
 
@@ -111,4 +124,15 @@ export class DereferenceRegistry {
 
         return true
     }
+
+    disconnect () {
+        if (this.#data?.symbol !== DereferenceRegistrySymbol)
+            throw new TypeError(`this (${Object.prototype.toString.call(this)}) is not a DereferenceRegistry instance`)
+
+        clearInterval(this.#data.intervalId)
+        this.#data.cellSet.clear()
+        this.#data.cleanup = undefined as any
+    }
 }
+
+export default DereferenceRegistry
